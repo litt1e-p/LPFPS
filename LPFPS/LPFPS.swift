@@ -26,14 +26,14 @@ import ObjectiveC
 
 let kLPFPSTraceLabelTag = 100001
 
-class LPFPS: NSObject
+public class LPFPS: NSObject
 {
     internal var autoStopWhenTabBarChanged: Bool = false
     private var lastTimeInterval: NSTimeInterval = 0
     private var traceCount: UInt                 = 0
     private var hasStarted: Bool                 = false
     
-    class var sharedFPS: LPFPS {
+    public class var sharedFPS: LPFPS {
         struct Static {
             static var onceToken: dispatch_once_t = 0
             static var instance: LPFPS?           = nil
@@ -67,7 +67,7 @@ class LPFPS: NSObject
         fpsLabel.text    = "\(Int(fps)) FPS"
     }
     
-    internal func start() {
+    public func start() {
         let rootVcSubViews = UIApplication.sharedApplication().keyWindow?.rootViewController?.view.subviews
         guard rootVcSubViews?.count > 0 else {return}
         for v in rootVcSubViews! {
@@ -79,7 +79,7 @@ class LPFPS: NSObject
         UIApplication.sharedApplication().keyWindow?.rootViewController?.view.addSubview(fpsLabel)
     }
     
-    internal func stop() {
+    public func stop() {
         let rootVcSubViews = UIApplication.sharedApplication().keyWindow?.rootViewController?.view.subviews
         guard rootVcSubViews?.count > 0 else {return}
         for v in rootVcSubViews! {
