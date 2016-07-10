@@ -1,5 +1,5 @@
 # LPFPS
-iOS App FPS tracer and monitor
+iOS App FPS tracer and monitor that works in even different rootViewControllers
 
 # Screenshot
 
