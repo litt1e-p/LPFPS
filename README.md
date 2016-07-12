@@ -24,7 +24,7 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
   return true
 }
 ```
-if you don't know how define a DEBUG flag in Swift, this [post](http://litt1e-p.github.io/2016/06/03/swift-debug-flag/) will may do help
+if you don't know how to define a DEBUG flag in Swift, this [post](http://litt1e-p.github.io/2016/06/03/swift-debug-flag/) will may do help
 
 # Screenshot
 
