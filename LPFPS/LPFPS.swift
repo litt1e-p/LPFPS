@@ -24,39 +24,54 @@ import Foundation
 import UIKit
 import ObjectiveC
 
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+    switch (lhs, rhs) {
+    case let (l?, r?):
+        return l < r
+    case (nil, _?):
+        return true
+    default:
+        return false
+    }
+}
+
+fileprivate func > <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+    switch (lhs, rhs) {
+    case let (l?, r?):
+        return l > r
+    default:
+        return rhs < lhs
+    }
+}
+
+
 let kLPFPSTraceLabelTag = 100001
 
-public class LPFPS: NSObject
+open class LPFPS: NSObject
 {
-    internal var autoStopWhenTabBarChanged: Bool = false
-    private var lastTimeInterval: NSTimeInterval = 0
-    private var traceCount: UInt                 = 0
-    private var hasStarted: Bool                 = false
+    static let sharedFPS: LPFPS = {
+        let instance = LPFPS()
+        return instance
+    } ()
     
-    public class var sharedFPS: LPFPS {
-        struct Static {
-            static var onceToken: dispatch_once_t = 0
-            static var instance: LPFPS?           = nil
-        }
-        dispatch_once(&Static.onceToken) {
-            Static.instance = LPFPS()
-        }
-        return Static.instance!
-    }
+    internal var autoStopWhenTabBarChanged: Bool   = false
+    fileprivate var lastTimeInterval: TimeInterval = 0
+    fileprivate var traceCount: UInt               = 0
+    fileprivate var hasStarted: Bool               = false
     
     override init() {
         super.init()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(applicationDidBecomeActiveNotification), name: UIApplicationDidBecomeActiveNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(applicationWillResignActiveNotification), name: UIApplicationWillResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActiveNotification), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationWillResignActiveNotification), name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
     }
     
     deinit {
-        displayLink.paused = true
-        displayLink.removeFromRunLoop(NSRunLoop.currentRunLoop(), forMode: NSRunLoopCommonModes)
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        displayLink.isPaused = true
+        displayLink.remove(from: RunLoop.current, forMode: RunLoopMode.commonModes)
+        NotificationCenter.default.removeObserver(self)
     }
     
-    @objc private func displayLinkTrace(link: CADisplayLink) {
+    @objc fileprivate func displayLinkTrace(_ link: CADisplayLink) {
         guard lastTimeInterval != 0 else {lastTimeInterval = link.timestamp; return}
         traceCount      += 1
         let interval     = link.timestamp - lastTimeInterval
@@ -67,23 +82,23 @@ public class LPFPS: NSObject
         fpsLabel.text    = "\(Int(fps)) FPS"
     }
     
-    public func start() {
-        let rootVcSubViews = UIApplication.sharedApplication().keyWindow?.rootViewController?.view.subviews
+    open func start() {
+        let rootVcSubViews = UIApplication.shared.keyWindow?.rootViewController?.view.subviews
         guard rootVcSubViews?.count > 0 else {return}
         for v in rootVcSubViews! {
-            if v.isKindOfClass(UILabel.self) && v.tag == kLPFPSTraceLabelTag {
+            if v.isKind(of: UILabel.self) && v.tag == kLPFPSTraceLabelTag {
                 return
             }
         }
         hasStarted = true
-        UIApplication.sharedApplication().keyWindow?.rootViewController?.view.addSubview(fpsLabel)
+        UIApplication.shared.keyWindow?.rootViewController?.view.addSubview(fpsLabel)
     }
     
-    public func stop() {
-        let rootVcSubViews = UIApplication.sharedApplication().keyWindow?.rootViewController?.view.subviews
+    open func stop() {
+        let rootVcSubViews = UIApplication.shared.keyWindow?.rootViewController?.view.subviews
         guard rootVcSubViews?.count > 0 else {return}
         for v in rootVcSubViews! {
-            if v.isKindOfClass(UILabel.self) && v.tag == kLPFPSTraceLabelTag {
+            if v.isKind(of: UILabel.self) && v.tag == kLPFPSTraceLabelTag {
                 v.removeFromSuperview()
                 hasStarted = false
                 return
@@ -91,42 +106,39 @@ public class LPFPS: NSObject
         }
     }
     
-    @objc private func applicationDidBecomeActiveNotification() {
-        displayLink.paused = false
+    @objc fileprivate func applicationDidBecomeActiveNotification() {
+        displayLink.isPaused = false
     }
     
-    @objc private func applicationWillResignActiveNotification() {
-        displayLink.paused = true
+    @objc fileprivate func applicationWillResignActiveNotification() {
+        displayLink.isPaused = true
     }
     
-    private lazy var displayLink: CADisplayLink = {
+    fileprivate lazy var displayLink: CADisplayLink = {
         let dl = CADisplayLink(target: self, selector: #selector(displayLinkTrace(_:)))
-        dl.paused = true
-        dl.addToRunLoop(NSRunLoop.currentRunLoop(), forMode: NSRunLoopCommonModes)
+        dl.isPaused = true
+        dl.add(to: RunLoop.current, forMode: RunLoopMode.commonModes)
         return dl
     } ()
     
     internal lazy var fpsLabel: UILabel = {
-        let lb             = UILabel(frame: CGRectMake((UIScreen.mainScreen().bounds.size.width-50) / 2 + 50, 0, 50, 20))
-        lb.font            = UIFont.boldSystemFontOfSize(12.0)
+        let lb             = UILabel(frame: CGRect(x: (UIScreen.main.bounds.size.width-50) / 2 + 50, y: 0, width: 50, height: 20))
+        lb.font            = UIFont.boldSystemFont(ofSize: 12.0)
         lb.textColor       = UIColor(red: 14.0/255.0, green: 200.0/255.0, blue: 36.0/255.0, alpha: 1.0)
-        lb.backgroundColor = .clearColor()
-        lb.textAlignment   = .Right
+        lb.backgroundColor = .clear
+        lb.textAlignment   = .right
         lb.tag             = kLPFPSTraceLabelTag
         return lb
     } ()
 }
 
-public extension UITabBarController
+extension UITabBarController
 {
-    public override class func initialize() {
-        struct Static {
-            static var token: dispatch_once_t = 0
-        }
+     open override class func initialize() {
         if self !== UITabBarController.self {
             return
         }
-        dispatch_once(&Static.token) {
+        var _ = {
             let viewAppearSelector            = #selector(UITabBarController.viewWillAppear(_:))
             let swizzledViewAppearSelector    = #selector(self.swizzled_viewWillAppear(_:))
             let viewDisappearSelector         = #selector(UITabBarController.viewDidDisappear(_:))
@@ -150,10 +162,11 @@ public extension UITabBarController
             } else {
                 method_exchangeImplementations(viewDisappearMethod, swizzledViewDisappearMethod)
             }
-        }
+
+        } ()
     }
     
-    @objc private func swizzled_viewWillAppear(animated: Bool) {
+    @objc fileprivate func swizzled_viewWillAppear(_ animated: Bool) {
         self.swizzled_viewWillAppear(animated)
         guard fpsTracerInited() else {return}
         let fpsTracer = LPFPS.sharedFPS
@@ -161,7 +174,7 @@ public extension UITabBarController
         fpsTracer.start()
     }
     
-    @objc private func swizzled_viewDidDisappear(animated: Bool) {
+    @objc fileprivate func swizzled_viewDidDisappear(_ animated: Bool) {
         self.swizzled_viewDidDisappear(animated)
         guard fpsTracerInited() else {return}
         let fpsTracer = LPFPS.sharedFPS
@@ -169,7 +182,7 @@ public extension UITabBarController
         fpsTracer.stop()
     }
     
-    private func fpsTracerInited() -> Bool {
+    fileprivate func fpsTracerInited() -> Bool {
         return LPFPS.sharedFPS.hasStarted
     }
 }

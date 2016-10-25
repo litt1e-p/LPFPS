@@ -132,9 +132,9 @@ open class LPFPS: NSObject
     } ()
 }
 
-public extension UITabBarController
+extension UITabBarController
 {
-    open override class func initialize() {
+     open override class func initialize() {
         if self !== UITabBarController.self {
             return
         }
