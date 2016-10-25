@@ -21,8 +21,8 @@ class TwoViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        UIApplication.sharedApplication().keyWindow?.rootViewController = TabBarOneController()
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        UIApplication.shared.keyWindow?.rootViewController = TabBarOneController()
     }
     
     /*

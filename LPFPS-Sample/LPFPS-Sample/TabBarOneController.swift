@@ -12,10 +12,10 @@ class TabBarOneController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        tabBar.tintColor = .purpleColor()
+        tabBar.tintColor = .purple
         let oneVc = OneViewController()
         oneVc.tabBarItem.title = "One"
-        oneVc.view.backgroundColor = .purpleColor()
+        oneVc.view.backgroundColor = .purple
         viewControllers = [UINavigationController(rootViewController: oneVc)]
     }
 }
