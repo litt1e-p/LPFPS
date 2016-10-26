@@ -49,7 +49,7 @@ let kLPFPSTraceLabelTag = 100001
 
 open class LPFPS: NSObject
 {
-    static let sharedFPS: LPFPS = {
+    open static let sharedFPS: LPFPS = {
         let instance = LPFPS()
         return instance
     } ()
@@ -134,7 +134,7 @@ open class LPFPS: NSObject
 
 extension UITabBarController
 {
-     open override class func initialize() {
+    open override class func initialize() {
         if self !== UITabBarController.self {
             return
         }
@@ -162,7 +162,7 @@ extension UITabBarController
             } else {
                 method_exchangeImplementations(viewDisappearMethod, swizzledViewDisappearMethod)
             }
-
+            
         } ()
     }
     
