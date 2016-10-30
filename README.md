@@ -3,7 +3,11 @@ iOS App FPS tracer and monitor that works in even different rootViewControllers
 
 # Installation
 
+- for < swift 3
 `pod 'LPFPS', '~> 0.0.2'`
+
+- for = swift 3
+`pod 'LPFPS', '~> 1.0.0'`
 
 # Usage
 
